@@ -1,0 +1,26 @@
+{
+  "name": "teamwork-api",
+  "version": "1.0.0",
+  "description": "This is the api/back-end for Teamwork app. Teamwork is an internal social network for employees of an organization. The goal of this application is to facilitate more interaction between colleagues and promote team bonding.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PrincewillIroka/teamwork-api.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/PrincewillIroka/teamwork-api/issues"
+  },
+  "homepage": "https://github.com/PrincewillIroka/teamwork-api#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1"
+  }
+}
