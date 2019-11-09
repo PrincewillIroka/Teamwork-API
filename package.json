@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "test": "mocha --exit",
-    "cover": "nyc cover _mocha",
+    "cover": "nyc _mocha",
     "coveralls": "npm run cover -- --report lcovonly && cat ./coverage/lcov.info | coveralls"
   },
   "repository": {
