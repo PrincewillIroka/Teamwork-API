@@ -6,3 +6,5 @@ cache:
     - '$HOME/.npm'
 script:
   - npm run test
+after_success:
+  - npm run coveralls
