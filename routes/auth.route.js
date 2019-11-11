@@ -6,7 +6,7 @@ const jwtVerification = require('./jwt-verify')
 const authRoutes = express.Router()
 const SALT_WORK_FACTOR = 10
 const jwtKey = 'securesecretkey'
-const jwtExpirySeconds = 300
+const jwtExpirySeconds = 10800
 
 authRoutes.route('/create-user').post(function(request, response) {
   let status = {}
@@ -116,6 +116,64 @@ authRoutes.route('/create-user').post(function(request, response) {
       })
     }
   })
+})
+
+authRoutes.route('/signin').post(function(request, response) {
+  let status = {}
+  const { email, password } = request.body
+
+  const sqlQuery = {
+    text: 'SELECT * FROM users WHERE email = $1',
+    values: [email]
+  }
+
+  pool.query(sqlQuery, (error, result) => {
+    if (error) {
+      status = {
+        status: 'error',
+        error: 'An error occured'
+      }
+      response.status(200).json(status)
+    } else if (result.rows.length > 0) {
+      bcrypt.compare(password, result.rows[0].password, function(err, isMatch) {
+        if (err) {
+          status = {
+            status: 'error',
+            error: 'An error occured'
+          }
+          response.status(200).json(status)
+        } else if (!isMatch) {
+          status = {
+            status: 'error',
+            error: 'Invalid Login'
+          }
+          response.status(200).json(status)
+        } else {
+          const token = jwt.sign({ email }, jwtKey, {
+            algorithm: 'HS256',
+            expiresIn: jwtExpirySeconds
+          })
+          status = {
+            status: 'success',
+            data: {
+              token,
+              userId: result.rows[0].userId,
+              accessLevel: result.rows[0].accessLevel
+            }
+          }
+          response.status(200).json(status)
+        }
+      })
+    }
+  })
+})
+
+authRoutes.route('/test').get(function(request, response) {
+  const status = {
+    status: 'error',
+    error: 'An error occured'
+  }
+  response.status(200).send(status)
 })
 
 module.exports = authRoutes

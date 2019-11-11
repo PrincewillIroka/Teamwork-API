@@ -18,7 +18,7 @@ describe('Teamwork', () => {
         department: 'Information Technology',
         address: 'Ikoyi Street, Lagos',
         token:
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im9iYW1hQGdtYWlsLmNvbSIsImlhdCI6MTU3MzUxNDc3MSwiZXhwIjoxNTczNTE1MDcxfQ.o-fLKF1uZdKx297DvNr8G1q9T40QMi1K5UkZEf4GZXk'
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im9iYW1hQGdtYWlsLmNvbSIsImlhdCI6MTU3MzUxNTkxMiwiZXhwIjoxNTczNTI2NzEyfQ.Eo5u9OzWBpBAXPz2ZILstzdKNyy4lCLafLVYF-oJO-s'
       }
       chai
         .request(server)
