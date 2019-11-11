@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "mocha --exit",
+    "test": "mocha --timeout 10000 --exit",
     "coveralls": "nyc npm test && nyc report --reporter=text-lcov | coveralls"
   },
   "repository": {
@@ -20,14 +20,19 @@
   },
   "homepage": "https://github.com/PrincewillIroka/teamwork-api#readme",
   "dependencies": {
+    "bcrypt": "^3.0.6",
+    "body-parser": "^1.19.0",
     "chai": "^4.2.0",
+    "chai-http": "^4.3.0",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "eslint": "^6.6.0",
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-import": "^2.18.2",
     "express": "^4.17.1",
-    "pg": "^7.12.1"
+    "jsonwebtoken": "^8.5.1",
+    "pg": "^7.12.1",
+    "request": "^2.88.0"
   },
   "devDependencies": {
     "coveralls": "^3.0.7",
