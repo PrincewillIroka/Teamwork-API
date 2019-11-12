@@ -6,6 +6,14 @@ const server = require('../index')
 chai.use(chaiHttp)
 
 describe('Teamwork', () => {
+  beforeEach(done => {
+    chai
+      .request(server)
+      .get('/api/v1/auth/clear-db')
+      .end((err, res) => {
+        done()
+      })
+  })
   describe('/POST create-user', () => {
     it('it should create an employee user account', done => {
       const data = {

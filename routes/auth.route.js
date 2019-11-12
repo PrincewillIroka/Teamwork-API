@@ -49,13 +49,13 @@ authRoutes.route('/create-user').post(function(request, response) {
         status: 'error',
         error: 'An error occured'
       }
-      response.status(200).json(status)
+      response.status(500).json(status)
     } else if (result.rows.length > 0) {
       status = {
         status: 'error',
         error: 'User already exists'
       }
-      response.status(200).json(status)
+      response.status(201).json(status)
     } else {
       bcrypt.genSalt(SALT_WORK_FACTOR, function(error, salt) {
         if (error) {
@@ -63,7 +63,7 @@ authRoutes.route('/create-user').post(function(request, response) {
             status: 'error',
             error: 'An error occured'
           }
-          response.status(200).json(status)
+          response.status(500).json(status)
         } else {
           // hash the password along with our new salt
           bcrypt.hash(password, salt, async function(error, hash) {
@@ -72,7 +72,7 @@ authRoutes.route('/create-user').post(function(request, response) {
                 status: 'error',
                 error: 'An error occured'
               }
-              response.status(200).json(status)
+              response.status(500).json(status)
             } else {
               const sqlQuery = {
                 text:
@@ -97,7 +97,7 @@ authRoutes.route('/create-user').post(function(request, response) {
                     status: 'error',
                     error: 'An error occured'
                   }
-                  response.status(200).json(status)
+                  response.status(500).json(status)
                 } else {
                   status = {
                     status: 'success',
@@ -118,13 +118,12 @@ authRoutes.route('/create-user').post(function(request, response) {
   })
 })
 
-authRoutes.route('/signin').post(function(request, response) {
+authRoutes.route('/clear-db').get(function(request, response) {
   let status = {}
-  const { email, password } = request.body
 
   const sqlQuery = {
-    text: 'SELECT * FROM users WHERE email = $1',
-    values: [email]
+    text: 'DELETE FROM users WHERE email = $1',
+    values: ['jobs@gmail.com']
   }
 
   pool.query(sqlQuery, (error, result) => {
@@ -133,47 +132,14 @@ authRoutes.route('/signin').post(function(request, response) {
         status: 'error',
         error: 'An error occured'
       }
+      response.status(500).json(status)
+    } else {
+      status = {
+        status: 'success'
+      }
       response.status(200).json(status)
-    } else if (result.rows.length > 0) {
-      bcrypt.compare(password, result.rows[0].password, function(err, isMatch) {
-        if (err) {
-          status = {
-            status: 'error',
-            error: 'An error occured'
-          }
-          response.status(200).json(status)
-        } else if (!isMatch) {
-          status = {
-            status: 'error',
-            error: 'Invalid Login'
-          }
-          response.status(200).json(status)
-        } else {
-          const token = jwt.sign({ email }, jwtKey, {
-            algorithm: 'HS256',
-            expiresIn: jwtExpirySeconds
-          })
-          status = {
-            status: 'success',
-            data: {
-              token,
-              userId: result.rows[0].userId,
-              accessLevel: result.rows[0].accessLevel
-            }
-          }
-          response.status(200).json(status)
-        }
-      })
     }
   })
-})
-
-authRoutes.route('/test').get(function(request, response) {
-  const status = {
-    status: 'error',
-    error: 'An error occured'
-  }
-  response.status(200).send(status)
 })
 
 module.exports = authRoutes
