@@ -10,7 +10,7 @@ describe('Teamwork', () => {
     chai
       .request(server)
       .get('/api/v1/auth/clear-db')
-      .end((err, res) => {
+      .end((error, response) => {
         done()
       })
   })
