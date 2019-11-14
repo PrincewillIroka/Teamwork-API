@@ -4,8 +4,9 @@
   "description": "This is the api/back-end for Teamwork app. Teamwork is an internal social network for employees of an organization. The goal of this application is to facilitate more interaction between colleagues and promote team bonding.",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "test": "mocha --timeout 10000 --exit",
+    "start": "node ./src",
+    "dev-server": "nodemon ./src",
+    "test": "mocha ./src/test --timeout 10000 --exit",
     "coveralls": "nyc npm test && nyc report --reporter=text-lcov | coveralls"
   },
   "repository": {
@@ -24,12 +25,17 @@
     "body-parser": "^1.19.0",
     "chai": "^4.2.0",
     "chai-http": "^4.3.0",
+    "cloudinary": "^1.17.0",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "eslint": "^6.6.0",
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-import": "^2.18.2",
     "express": "^4.17.1",
+    "express-fileupload": "^1.1.6-alpha.6",
+    "express-validator": "^6.2.0",
+    "helmet": "^3.21.2",
+    "hpp": "^0.2.2",
     "jsonwebtoken": "^8.5.1",
     "pg": "^7.12.1",
     "request": "^2.88.0"
