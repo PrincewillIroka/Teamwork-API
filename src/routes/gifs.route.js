@@ -59,7 +59,6 @@ gifsRoutes.route("/").post(async function (request, response) {
     };
     await pool.query(sqlQuery, (error, result) => {
       if (error) {
-        console.log(error)
         status = {
           status: "error",
           error: "An error occured"

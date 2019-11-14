@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node ./src",
     "dev-server": "nodemon ./src",
-    "test": "mocha ./src/test --timeout 10000 --exit",
+    "test": "mocha ./src/test --timeout 100000 --exit",
     "coveralls": "nyc npm test && nyc report --reporter=text-lcov | coveralls"
   },
   "repository": {
