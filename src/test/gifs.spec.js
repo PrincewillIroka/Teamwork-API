@@ -33,11 +33,14 @@ describe('Teamwork', () => {
                 .set('token', token)
                 .field('title', 'My New Gif')
                 .attach('gif', fs.readFileSync('./src/test/gif.gif'), 'gif.gif')
-                .end((error, response) => {
-                    response.should.have.status(200);
-                    response.body.should.have.property('status').eql('success');
-                    done()
+                .then((res) => {
+                    res.should.have.status(200);
+                    res.body.should.have.property('status').eql('success');
                 })
+                .catch((err) => {
+                    console.log(err.message);
+                });
+            done();
 
 
         });
