@@ -1,17 +1,18 @@
 const jwt = require('jsonwebtoken');
 
 const jwtVerification = (token) => {
-  let hasError = false;
+  let isValid = '';
   let email = '', accessLevel = '', userId = '', payload = '';
   try {
     payload = jwt.verify(token, process.env.JWT_KEY);
     email = payload.email;
     accessLevel = payload.accessLevel;
     userId = payload.userId
+    isValid = true;
   } catch (e) {
-    hasError = true;
+    isValid = false;
   }
-  return { hasError, email, accessLevel, userId };
+  return { isValid, email, accessLevel, userId };
 };
 
 module.exports = jwtVerification;

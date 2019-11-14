@@ -7,7 +7,7 @@ const server = require('../index');
 chai.use(chaiHttp);
 
 describe('Teamwork', () => {
-  describe('/POST create-user', () => {
+  describe('POST /create-user', () => {
     let adminToken = '';
     const adminCredentials = {
       email: 'robert@gmail.com',
@@ -57,7 +57,7 @@ describe('Teamwork', () => {
     });
   });
 
-  describe('/POST signin', () => {
+  describe('POST /signin', () => {
     it('it should allow user to sign in', (done) => {
       const data = {
         email: 'obama@gmail.com',
