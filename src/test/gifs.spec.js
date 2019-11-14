@@ -26,7 +26,6 @@ describe('Teamwork', () => {
                 });
         });
         it('it should allow user to create a gif', (done) => {
-
             chai
                 .request(server)
                 .post('/api/v1/gifs/')
