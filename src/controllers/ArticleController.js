@@ -243,4 +243,92 @@ const deleteArticle = async (request, response) => {
     }
 }
 
-module.exports = { createArticle, editArticle, deleteArticle }
+const commentOnArticle = async (request, response) => {
+    let status = {},
+        { comment } = request.body,
+        { articleId } = request.params
+    const token = request.headers.token;
+    if (token && articleId && comment) {
+        const { isValid, userId } = jwtVerification(token)
+        if (!isValid) {
+            status = {
+                status: "error",
+                error: "Invalid token"
+            };
+            response.status(400).json(status);
+            return;
+        }
+
+        const sqlQuery1 = {
+            text:
+                'SELECT * FROM articles WHERE "articleId" = $1',
+            values: [articleId]
+        };
+
+        await pool.query(sqlQuery1, async (error, result1) => {
+            if (error) {
+                status = {
+                    status: "error",
+                    error: "Internal server error"
+                };
+                response.status(500).json(status);
+            } else if (result1.rows.length === 0) {
+                status = {
+                    status: "error",
+                    error: "Article doesn't exist"
+                };
+                response.status(400).json(status);
+            } else {
+                const { title, article } = result1.rows[0]
+
+                const sqlQuery2 = {
+                    text:
+                        'INSERT INTO comments ("comment", "userId", "articleId") VALUES($1, $2, $3) RETURNING *',
+                    values: [comment, userId, articleId]
+                };
+
+                await pool.query(sqlQuery2, (error, result2) => {
+                    if (error) {
+                        status = {
+                            status: "error",
+                            error: "Internal server error"
+                        };
+                        response.status(500).json(status);
+                    } else {
+                        const { created_at } = result2.rows[0]
+                        status = {
+                            status: "success",
+                            data: {
+                                message: "Comment successfully created",
+                                createdOn: created_at,
+                                articleTitle: title,
+                                article,
+                                comment
+                            }
+                        };
+                        response.status(200).json(status);
+                    }
+                });
+
+            }
+
+        })
+
+    } else {
+        let errorMessage = '';
+        if (!token) {
+            errorMessage = 'Invalid token';
+        } else if (!articleId) {
+            errorMessage = 'Invalid articleId';
+        } else if (!comment) {
+            errorMessage = 'Invalid comment';
+        }
+        status = {
+            status: 'error',
+            error: errorMessage,
+        };
+        return response.status(400).json(status);
+    }
+}
+
+module.exports = { createArticle, editArticle, deleteArticle, commentOnArticle }

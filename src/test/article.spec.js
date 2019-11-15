@@ -67,6 +67,26 @@ describe('Teamwork', () => {
         });
     });
 
+    describe('POST /articles/:articleId/comment', () => {
+        it('it should allow user to add comment to an article', (done) => {
+            chai
+                .request(server)
+                .post(`/api/v1/articles/${articleId}/comment`)
+                .set('Content-Type', 'multipart/form-data')
+                .set('token', token)
+                .field('comment', 'A new comment on a post')
+                .then((res) => {
+                    res.should.have.status(200);
+                    res.body.should.have.property('status').eql('success');
+                    done();
+                })
+                .catch((err) => {
+                    console.log(err.message);
+                });
+
+        });
+    });
+
     describe('DELETE /articles/:articleId', () => {
         it('it should allow user to delete an article', (done) => {
             chai
