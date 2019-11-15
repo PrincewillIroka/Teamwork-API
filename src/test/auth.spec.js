@@ -50,7 +50,7 @@ describe('Teamwork', () => {
         .post('/api/v1/auth/create-user')
         .send(data)
         .end((err, res) => {
-          res.should.have.status(200);
+          res.should.have.status(201);
           res.body.should.have.property('status').eql('success');
           done();
         });

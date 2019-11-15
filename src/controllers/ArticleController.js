@@ -40,7 +40,7 @@ const createArticle = async (request, response) => {
                         title
                     }
                 };
-                response.status(200).json(status);
+                response.status(201).json(status);
             }
         });
 
@@ -62,4 +62,70 @@ const createArticle = async (request, response) => {
 
 }
 
-module.exports = { createArticle }
+const editArticle = async (request, response) => {
+    let status = {},
+        { articleId } = request.params,
+        { title, article } = request.body;
+    const token = request.headers.token;
+
+    if (title && token && article) {
+        const { isValid, userId } = jwtVerification(token)
+        if (!isValid) {
+            status = {
+                status: "error",
+                error: "Invalid token"
+            };
+            response.status(400).json(status);
+            return;
+        }
+
+        const sqlQuery = {
+            text:
+                'UPDATE articles SET "title" = $1, "article" = $2 WHERE "articleId" = $3 AND "userId" = $4 RETURNING *',
+            values: [title, article, articleId, userId]
+        };
+        await pool.query(sqlQuery, (error, result) => {
+            if (error) {
+                status = {
+                    status: "error",
+                    error: "An error occured"
+                };
+                response.status(500).json(status);
+            } else if (result.rows.length === 0) {
+                status = {
+                    status: "error",
+                    error: "Article doesn't exist"
+                };
+                response.status(400).json(status);
+            }
+            else {
+                status = {
+                    status: "success",
+                    data: {
+                        message: "Article successfully updated",
+                        title,
+                        article
+                    }
+                };
+                response.status(200).json(status);
+            }
+        });
+
+    } else {
+        let errorMessage = '';
+        if (!title) {
+            errorMessage = 'Invalid title';
+        } else if (!token) {
+            errorMessage = 'Invalid token';
+        } else if (!article) {
+            errorMessage = 'Invalid article';
+        }
+        status = {
+            status: 'error',
+            error: errorMessage,
+        };
+        return response.status(400).json(status);
+    }
+}
+
+module.exports = { createArticle, editArticle }

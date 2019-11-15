@@ -33,7 +33,7 @@ describe('Teamwork', () => {
                 .field('title', 'My New Gif')
                 .attach('gif', fs.readFileSync('./src/test/gif.gif'), 'gif.gif')
                 .then((res) => {
-                    res.should.have.status(200);
+                    res.should.have.status(201);
                     res.body.should.have.property('status').eql('success');
                     expect(res.body.data).to.include({
                         message: 'Article successfully posted'
