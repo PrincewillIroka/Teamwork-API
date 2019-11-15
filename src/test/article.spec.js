@@ -6,7 +6,7 @@ const server = require('../index');
 chai.use(chaiHttp);
 
 describe('Teamwork', () => {
-    let token, articleId = ''
+    let token, articleId;
     const userCredentials = {
         email: 'obama@gmail.com',
         password: 'pass',

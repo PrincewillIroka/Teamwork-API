@@ -161,7 +161,7 @@ const deleteArticle = async (request, response) => {
         { articleId } = request.params
     const token = request.headers.token;
 
-    if (token) {
+    if (token && articleId) {
         const { isValid, userId } = jwtVerification(token)
         let verifiedUserId = userId
         if (!isValid) {
@@ -232,6 +232,8 @@ const deleteArticle = async (request, response) => {
         let errorMessage = '';
         if (!token) {
             errorMessage = 'Invalid token';
+        } else if (!articleId) {
+            errorMessage = 'Invalid articleId';
         }
         status = {
             status: 'error',

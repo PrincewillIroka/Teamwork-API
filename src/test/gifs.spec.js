@@ -7,7 +7,7 @@ const server = require('../index');
 chai.use(chaiHttp);
 
 describe('Teamwork', () => {
-    let token = '';
+    let token, gifId;
     const userCredentials = {
         email: 'obama@gmail.com',
         password: 'pass',
@@ -33,7 +33,28 @@ describe('Teamwork', () => {
                 .field('title', 'My New Gif')
                 .attach('gif', fs.readFileSync('./src/test/gif.gif'), 'gif.gif')
                 .then((res) => {
+                    const { data } = res.body;
+                    gifId = data.gifId
                     res.should.have.status(201);
+                    res.body.should.have.property('status').eql('success');
+                    done();
+                })
+                .catch((err) => {
+                    console.log(err.message);
+                });
+
+        });
+    });
+
+    describe('DELETE /gifs/:gifId', () => {
+        it('it should allow user to delete a gif', (done) => {
+            chai
+                .request(server)
+                .delete(`/api/v1/gifs/${gifId}`)
+                .set('Content-Type', 'multipart/form-data')
+                .set('token', token)
+                .then((res) => {
+                    res.should.have.status(200);
                     res.body.should.have.property('status').eql('success');
                     done();
                 })
