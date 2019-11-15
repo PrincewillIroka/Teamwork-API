@@ -26,7 +26,7 @@ const createArticle = async (request, response) => {
             if (error) {
                 status = {
                     status: "error",
-                    error: "An error occured"
+                    error: "Internal server error"
                 };
                 response.status(500).json(status);
             } else {
@@ -70,6 +70,7 @@ const editArticle = async (request, response) => {
 
     if (title && token && article) {
         const { isValid, userId } = jwtVerification(token)
+        let verifiedUserId = userId
         if (!isValid) {
             status = {
                 status: "error",
@@ -79,16 +80,17 @@ const editArticle = async (request, response) => {
             return;
         }
 
-        const sqlQuery = {
+        const sqlQuery1 = {
             text:
-                'UPDATE articles SET "title" = $1, "article" = $2 WHERE "articleId" = $3 AND "userId" = $4 RETURNING *',
-            values: [title, article, articleId, userId]
+                'SELECT * FROM articles WHERE "articleId" = $1',
+            values: [articleId]
         };
-        await pool.query(sqlQuery, (error, result) => {
+
+        await pool.query(sqlQuery1, async (error, result) => {
             if (error) {
                 status = {
                     status: "error",
-                    error: "An error occured"
+                    error: "Internal server error"
                 };
                 response.status(500).json(status);
             } else if (result.rows.length === 0) {
@@ -99,15 +101,41 @@ const editArticle = async (request, response) => {
                 response.status(400).json(status);
             }
             else {
-                status = {
-                    status: "success",
-                    data: {
-                        message: "Article successfully updated",
-                        title,
-                        article
-                    }
-                };
-                response.status(200).json(status);
+                const { userId } = result.rows[0]
+                if (verifiedUserId !== userId) {
+                    status = {
+                        status: "error",
+                        error: "Unauthorized access"
+                    };
+                    response.status(401).json(status);
+                } else {
+                    const sqlQuery2 = {
+                        text:
+                            'UPDATE articles SET "title" = $1, "article" = $2 WHERE "articleId" = $3 AND "userId" = $4 RETURNING *',
+                        values: [title, article, articleId, userId]
+                    };
+                    await pool.query(sqlQuery2, (error, result) => {
+                        if (error) {
+                            status = {
+                                status: "error",
+                                error: "Internal server error"
+                            };
+                            response.status(500).json(status);
+                        }
+                        else {
+                            status = {
+                                status: "success",
+                                data: {
+                                    message: "Article successfully updated",
+                                    title,
+                                    article
+                                }
+                            };
+                            response.status(200).json(status);
+                        }
+                    });
+                }
+
             }
         });
 
@@ -128,4 +156,89 @@ const editArticle = async (request, response) => {
     }
 }
 
-module.exports = { createArticle, editArticle }
+const deleteArticle = async (request, response) => {
+    let status = {},
+        { articleId } = request.params
+    const token = request.headers.token;
+
+    if (token) {
+        const { isValid, userId } = jwtVerification(token)
+        let verifiedUserId = userId
+        if (!isValid) {
+            status = {
+                status: "error",
+                error: "Invalid token"
+            };
+            response.status(400).json(status);
+            return;
+        }
+
+        const sqlQuery1 = {
+            text:
+                'SELECT * FROM articles WHERE "articleId" = $1',
+            values: [articleId]
+        };
+
+        await pool.query(sqlQuery1, async (error, result) => {
+            if (error) {
+                status = {
+                    status: "error",
+                    error: "Internal server error"
+                };
+                response.status(500).json(status);
+            } else if (result.rows.length === 0) {
+                status = {
+                    status: "error",
+                    error: "Article doesn't exist"
+                };
+                response.status(400).json(status);
+            } else {
+                const { userId } = result.rows[0]
+                if (verifiedUserId !== userId) {
+                    status = {
+                        status: "error",
+                        error: "Unauthorized access"
+                    };
+                    response.status(401).json(status);
+                } else {
+                    const sqlQuery2 = {
+                        text:
+                            'DELETE FROM articles WHERE "articleId" = $1 AND "userId" = $2',
+                        values: [articleId, userId]
+                    };
+                    await pool.query(sqlQuery2, (error, result) => {
+                        if (error) {
+                            status = {
+                                status: "error",
+                                error: "Internal server error"
+                            };
+                            response.status(500).json(status);
+                        } else {
+                            status = {
+                                status: "success",
+                                data: {
+                                    message: "Article successfully deleted"
+                                }
+                            };
+                            response.status(200).json(status);
+                        }
+                    });
+                }
+            }
+
+        })
+
+    } else {
+        let errorMessage = '';
+        if (!token) {
+            errorMessage = 'Invalid token';
+        }
+        status = {
+            status: 'error',
+            error: errorMessage,
+        };
+        return response.status(400).json(status);
+    }
+}
+
+module.exports = { createArticle, editArticle, deleteArticle }

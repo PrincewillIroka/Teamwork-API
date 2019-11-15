@@ -7,12 +7,12 @@ const server = require('../index');
 chai.use(chaiHttp);
 
 describe('Teamwork', () => {
+    let token = '';
+    const userCredentials = {
+        email: 'obama@gmail.com',
+        password: 'pass',
+    };
     describe('POST /gifs', () => {
-        let token = '';
-        const userCredentials = {
-            email: 'robert@gmail.com',
-            password: 'pass',
-        };
         before((done) => {
             chai
                 .request(server)
@@ -35,15 +35,11 @@ describe('Teamwork', () => {
                 .then((res) => {
                     res.should.have.status(201);
                     res.body.should.have.property('status').eql('success');
-                    expect(res.body.data).to.include({
-                        message: 'Article successfully posted'
-                    });
+                    done();
                 })
                 .catch((err) => {
                     console.log(err.message);
                 });
-            done();
-
 
         });
     });

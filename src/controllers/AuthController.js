@@ -27,20 +27,21 @@ const createUser = (request, response) => {
 
     if (firstName && lastName && email && isValidEmail(email) && password
         && gender && jobRole && department && address && token) {
-        if (!jwtVerification(token).isValid) {
+        let { isValid, accessLevel } = jwtVerification(token)
+        if (!isValid) {
             status = {
                 status: 'error',
                 error: 'Invalid token',
             };
             response.status(400).json(status);
-        } else if (jwtVerification(token).accessLevel !== 'admin') {
+        } else if (accessLevel !== 'admin') {
             status = {
                 status: 'error',
                 error: 'Sorry! only admins can access this',
             };
             response.status(401).json(status);
         } else {
-            const accessLevel = 'employee';
+            let accessLevel = 'employee';
             const userId = Number(
                 new Date()
                     .valueOf()
@@ -48,15 +49,15 @@ const createUser = (request, response) => {
                     .substring(0, 7),
             );
 
-            const sqlQuery = {
+            const sqlQuery1 = {
                 text: 'SELECT * FROM users WHERE email = $1',
                 values: [email],
             };
-            pool.query(sqlQuery, (error, result) => {
+            pool.query(sqlQuery1, (error, result) => {
                 if (error) {
                     status = {
                         status: 'error',
-                        error: 'An error occured',
+                        error: 'Internal server error',
                     };
                     response.status(500).json(status);
                 } else if (result.rows.length > 0) {
@@ -70,7 +71,7 @@ const createUser = (request, response) => {
                         if (error) {
                             status = {
                                 status: 'error',
-                                error: 'An error occured',
+                                error: 'Internal server error',
                             };
                             response.status(500).json(status);
                         } else {
@@ -79,11 +80,11 @@ const createUser = (request, response) => {
                                 if (error) {
                                     status = {
                                         status: 'error',
-                                        error: 'An error occured',
+                                        error: 'Internal server error',
                                     };
                                     response.status(500).json(status);
                                 } else {
-                                    const sqlQuery = {
+                                    const sqlQuery2 = {
                                         text:
                                             'INSERT INTO users ("userId", "firstName", "lastName", "email", "password", "gender", "jobRole", "department", "address", "accessLevel") VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)',
                                         values: [
@@ -99,12 +100,12 @@ const createUser = (request, response) => {
                                             accessLevel,
                                         ],
                                     };
-                                    await pool.query(sqlQuery, (error, result) => {
+                                    await pool.query(sqlQuery2, (error, result) => {
                                         if (error) {
                                             status = {
                                                 status: 'error',
                                                 status: 'error',
-                                                error: 'An error occured',
+                                                error: 'Internal server error',
                                             };
                                             response.status(500).json(status);
                                         } else {
@@ -153,7 +154,7 @@ const signIn = (request, response) => {
             if (error) {
                 status = {
                     status: 'error',
-                    error: 'An error occured',
+                    error: 'Internal server error',
                 };
 
                 response.status(500).json(status);
@@ -162,7 +163,7 @@ const signIn = (request, response) => {
                     if (err) {
                         status = {
                             status: 'error',
-                            error: 'An error occured',
+                            error: 'Internal server error',
                         };
                         response.status(500).json(status);
                     } else if (!isMatch) {
@@ -222,27 +223,34 @@ const clearDb = (request, response) => {
         };
         response.status(400).json(status);
         return;
+    } else if (jwtVerification(token).accessLevel !== 'admin') {
+        status = {
+            status: 'error',
+            error: 'Sorry! only admins can access this',
+        };
+        response.status(401).json(status);
+    } else {
+        const sqlQuery = {
+            text: 'DELETE FROM users WHERE email = $1',
+            values: ['jobs@gmail.com'],
+        };
+
+        pool.query(sqlQuery, (error, result) => {
+            if (error) {
+                status = {
+                    status: 'error',
+                    error: 'Internal server error',
+                };
+                response.status(500).json(status);
+            } else {
+                status = {
+                    status: 'success',
+                };
+                response.status(200).json(status);
+            }
+        });
     }
 
-    const sqlQuery = {
-        text: 'DELETE FROM users WHERE email = $1',
-        values: ['jobs@gmail.com'],
-    };
-
-    pool.query(sqlQuery, (error, result) => {
-        if (error) {
-            status = {
-                status: 'error',
-                error: 'An error occured',
-            };
-            response.status(500).json(status);
-        } else {
-            status = {
-                status: 'success',
-            };
-            response.status(200).json(status);
-        }
-    });
 };
 
 

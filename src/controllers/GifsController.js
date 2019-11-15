@@ -58,7 +58,7 @@ const createGif = async (request, response) => {
             if (error) {
                 status = {
                     status: "error",
-                    error: "An error occured"
+                    error: "Internal server error"
                 };
                 response.status(500).json(status);
             } else {
