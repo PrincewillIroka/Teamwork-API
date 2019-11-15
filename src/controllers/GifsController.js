@@ -30,7 +30,7 @@ const createGif = async (request, response) => {
                 status: "error",
                 error: "Please upload a GIF file"
             };
-            response.status(201).json(status);
+            response.status(400).json(status);
             return;
         }
 
@@ -74,7 +74,7 @@ const createGif = async (request, response) => {
                         imageUrl
                     }
                 };
-                response.status(200).json(status);
+                response.status(201).json(status);
             }
         });
 

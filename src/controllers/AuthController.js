@@ -38,7 +38,7 @@ const createUser = (request, response) => {
                 status: 'error',
                 error: 'Sorry! only admins can access this',
             };
-            response.status(400).json(status);
+            response.status(401).json(status);
         } else {
             const accessLevel = 'employee';
             const userId = Number(
@@ -116,7 +116,7 @@ const createUser = (request, response) => {
                                                     userId,
                                                 },
                                             };
-                                            response.status(200).json(status);
+                                            response.status(201).json(status);
                                         }
                                     });
                                 }
