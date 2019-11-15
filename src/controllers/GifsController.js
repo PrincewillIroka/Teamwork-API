@@ -97,4 +97,103 @@ const createGif = async (request, response) => {
 
 };
 
-module.exports = { createGif };
+const deleteGif = async (request, response) => {
+    let status = {},
+        { gifId } = request.params
+    const token = request.headers.token;
+
+    if (token && gifId) {
+        const { isValid, userId } = jwtVerification(token)
+        let verifiedUserId = userId
+        if (!isValid) {
+            status = {
+                status: "error",
+                error: "Invalid token"
+            };
+            response.status(400).json(status);
+            return;
+        }
+
+        const sqlQuery1 = {
+            text:
+                'SELECT * FROM gifs WHERE "gifId" = $1',
+            values: [gifId]
+        };
+
+        await pool.query(sqlQuery1, async (error, result) => {
+            if (error) {
+                status = {
+                    status: "error",
+                    error: "Internal server error"
+                };
+                response.status(500).json(status);
+            } else if (result.rows.length === 0) {
+                status = {
+                    status: "error",
+                    error: "Gif doesn't exist"
+                };
+                response.status(400).json(status);
+            } else {
+                const { userId, imageUrl, public_id } = result.rows[0];
+                if (verifiedUserId !== userId) {
+                    status = {
+                        status: "error",
+                        error: "Unauthorized access"
+                    };
+                    response.status(401).json(status);
+                } else {
+                    await cloudinary.api.delete_resources([public_id],
+                        async (error, result) => {
+                            if (error) {
+                                status = {
+                                    status: "error",
+                                    error: "Internal server error"
+                                };
+                                response.status(500).json(status);
+                            } else {
+                                const sqlQuery2 = {
+                                    text:
+                                        'DELETE FROM gifs WHERE "gifId" = $1 AND "userId" = $2',
+                                    values: [gifId, userId]
+                                };
+                                await pool.query(sqlQuery2, (error, result) => {
+                                    if (error) {
+                                        status = {
+                                            status: "error",
+                                            error: "Internal server error"
+                                        };
+                                        response.status(500).json(status);
+                                    } else {
+                                        status = {
+                                            status: "success",
+                                            data: {
+                                                message: "Gif successfully deleted"
+                                            }
+                                        };
+                                        response.status(200).json(status);
+                                    }
+                                });
+                            }
+                        });
+
+                }
+            }
+
+        })
+
+    } else {
+        let errorMessage = '';
+        if (!token) {
+            errorMessage = 'Invalid token';
+        } else if (!gifId) {
+            errorMessage = 'Invalid gifId';
+        }
+        status = {
+            status: 'error',
+            error: errorMessage,
+        };
+        return response.status(400).json(status);
+    }
+}
+
+module.exports = { createGif, deleteGif };
