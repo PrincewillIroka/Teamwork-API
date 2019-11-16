@@ -62,13 +62,13 @@ const createGif = async (request, response) => {
                 };
                 response.status(500).json(status);
             } else {
-                const { gifId, created_at } = result.rows[0]
+                const { gifId, createdOn } = result.rows[0]
                 status = {
                     status: "success",
                     data: {
                         gifId,
                         message: "GIF image successfully posted",
-                        createdOn: created_at,
+                        createdOn,
                         userId,
                         title,
                         imageUrl
@@ -249,12 +249,12 @@ const commentOnGif = async (request, response) => {
                         };
                         response.status(500).json(status);
                     } else {
-                        const { created_at } = result2.rows[0]
+                        const { createdOn } = result2.rows[0]
                         status = {
                             status: "success",
                             data: {
                                 message: "Comment successfully created",
-                                createdOn: created_at,
+                                createdOn,
                                 gifTitle: title,
                                 comment
                             }
