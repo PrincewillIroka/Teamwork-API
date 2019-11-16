@@ -76,7 +76,7 @@ describe('Teamwork', () => {
                 .set('token', token)
                 .field('comment', 'A new comment on a post')
                 .then((res) => {
-                    res.should.have.status(200);
+                    res.should.have.status(201);
                     res.body.should.have.property('status').eql('success');
                     done();
                 })

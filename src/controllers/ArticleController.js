@@ -307,7 +307,7 @@ const commentOnArticle = async (request, response) => {
                                 comment
                             }
                         };
-                        response.status(200).json(status);
+                        response.status(201).json(status);
                     }
                 });
 
