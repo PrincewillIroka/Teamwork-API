@@ -30,13 +30,13 @@ const createArticle = async (request, response) => {
                 };
                 response.status(500).json(status);
             } else {
-                const { articleId, created_at } = result.rows[0]
+                const { articleId, createdOn } = result.rows[0]
                 status = {
                     status: "success",
                     data: {
                         message: "Article successfully posted",
                         articleId,
-                        createdOn: created_at,
+                        createdOn,
                         title
                     }
                 };
@@ -289,6 +289,7 @@ const commentOnArticle = async (request, response) => {
                 };
 
                 await pool.query(sqlQuery2, (error, result2) => {
+
                     if (error) {
                         status = {
                             status: "error",
@@ -296,12 +297,12 @@ const commentOnArticle = async (request, response) => {
                         };
                         response.status(500).json(status);
                     } else {
-                        const { created_at } = result2.rows[0]
+                        const { createdOn } = result2.rows[0]
                         status = {
                             status: "success",
                             data: {
                                 message: "Comment successfully created",
-                                createdOn: created_at,
+                                createdOn,
                                 articleTitle: title,
                                 article,
                                 comment
