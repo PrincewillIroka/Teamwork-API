@@ -46,6 +46,26 @@ describe('Teamwork', () => {
         });
     });
 
+    describe('POST /gifs/:gifId/comment', () => {
+        it('it should allow user to add comment to a gif', (done) => {
+            chai
+                .request(server)
+                .post(`/api/v1/gifs/${gifId}/comment`)
+                .set('Content-Type', 'multipart/form-data')
+                .set('token', token)
+                .field('comment', 'A new comment on a gif')
+                .then((res) => {
+                    res.should.have.status(201);
+                    res.body.should.have.property('status').eql('success');
+                    done();
+                })
+                .catch((err) => {
+                    console.log(err.message);
+                });
+
+        });
+    });
+
     describe('DELETE /gifs/:gifId', () => {
         it('it should allow user to delete a gif', (done) => {
             chai

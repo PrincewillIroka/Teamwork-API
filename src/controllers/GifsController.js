@@ -196,4 +196,92 @@ const deleteGif = async (request, response) => {
     }
 }
 
-module.exports = { createGif, deleteGif };
+const commentOnGif = async (request, response) => {
+    let status = {},
+        { comment } = request.body,
+        { gifId } = request.params
+    const token = request.headers.token;
+    if (token && gifId && comment) {
+        const { isValid, userId } = jwtVerification(token)
+        if (!isValid) {
+            status = {
+                status: "error",
+                error: "Invalid token"
+            };
+            response.status(400).json(status);
+            return;
+        }
+
+        const sqlQuery1 = {
+            text:
+                'SELECT * FROM gifs WHERE "gifId" = $1',
+            values: [gifId]
+        };
+
+        await pool.query(sqlQuery1, async (error, result1) => {
+
+            if (error) {
+                status = {
+                    status: "error",
+                    error: "Internal server error"
+                };
+                response.status(500).json(status);
+            } else if (result1.rows.length === 0) {
+                status = {
+                    status: "error",
+                    error: "Gif doesn't exist"
+                };
+                response.status(400).json(status);
+            } else {
+                const { title } = result1.rows[0]
+
+                const sqlQuery2 = {
+                    text:
+                        'INSERT INTO "gifComments" ("comment", "userId", "gifId") VALUES($1, $2, $3) RETURNING *',
+                    values: [comment, userId, gifId]
+                };
+
+                await pool.query(sqlQuery2, (error, result2) => {
+                    if (error) {
+                        status = {
+                            status: "error",
+                            error: "Internal server error"
+                        };
+                        response.status(500).json(status);
+                    } else {
+                        const { created_at } = result2.rows[0]
+                        status = {
+                            status: "success",
+                            data: {
+                                message: "Comment successfully created",
+                                createdOn: created_at,
+                                gifTitle: title,
+                                comment
+                            }
+                        };
+                        response.status(201).json(status);
+                    }
+                });
+
+            }
+
+        })
+
+    } else {
+        let errorMessage = '';
+        if (!token) {
+            errorMessage = 'Invalid token';
+        } else if (!gifId) {
+            errorMessage = 'Invalid gifId';
+        } else if (!comment) {
+            errorMessage = 'Invalid comment';
+        }
+        status = {
+            status: 'error',
+            error: errorMessage,
+        };
+        return response.status(400).json(status);
+    }
+}
+
+module.exports = { createGif, deleteGif, commentOnGif };
