@@ -266,6 +266,7 @@ const commentOnArticle = async (request, response) => {
         };
 
         await pool.query(sqlQuery1, async (error, result1) => {
+
             if (error) {
                 status = {
                     status: "error",
@@ -283,7 +284,7 @@ const commentOnArticle = async (request, response) => {
 
                 const sqlQuery2 = {
                     text:
-                        'INSERT INTO comments ("comment", "userId", "articleId") VALUES($1, $2, $3) RETURNING *',
+                        'INSERT INTO "articleComments" ("comment", "userId", "articleId") VALUES($1, $2, $3) RETURNING *',
                     values: [comment, userId, articleId]
                 };
 
