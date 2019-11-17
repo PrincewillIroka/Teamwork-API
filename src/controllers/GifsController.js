@@ -413,7 +413,7 @@ const flagGif = async (request, response) => {
                 status = {
                     status: "success",
                     data: {
-                        message: "Gif flagged as in appropriate",
+                        message: "Gif flagged as inappropriate",
                         title,
                         flag
                     }
@@ -476,7 +476,7 @@ const flagComment = async (request, response) => {
                 status = {
                     status: "success",
                     data: {
-                        message: "Comment flagged as in appropriate",
+                        message: "Comment flagged as inappropriate",
                         comment,
                         flag
                     }
@@ -498,7 +498,192 @@ const flagComment = async (request, response) => {
     }
 }
 
+const deleteInappropriateGif = async (request, response) => {
+    let status = {},
+        { gifId } = request.params
+    const token = request.headers.token;
+    if (token && gifId) {
+        const { isValid, accessLevel } = jwtVerification(token)
+        if (!isValid) {
+            status = {
+                status: "error",
+                error: "Invalid token"
+            };
+            response.status(400).json(status);
+            return;
+        } else if (accessLevel !== 'admin') {
+            status = {
+                status: 'error',
+                error: 'Sorry! only admins can access this',
+            };
+            response.status(401).json(status);
+        } else {
+            const sqlQuery1 = {
+                text:
+                    'SELECT * FROM gifs WHERE "gifId" = $1 AND flag = $2',
+                values: [gifId, true]
+            };
+
+            await pool.query(sqlQuery1, async (error, result) => {
+                if (error) {
+                    status = {
+                        status: "error",
+                        error: "Internal server error"
+                    };
+                    response.status(500).json(status);
+                } else if (result.rows.length === 0) {
+                    status = {
+                        status: "error",
+                        error: "Couldn't find inappropriate gif"
+                    };
+                    response.status(400).json(status);
+                } else {
+
+                    const sqlQuery2 = {
+                        text:
+                            'DELETE FROM "gifComments" WHERE "gifId" = $1 ',
+                        values: [gifId]
+                    };
+
+                    await pool.query(sqlQuery2, async (error, result) => {
+                        if (error) {
+                            status = {
+                                status: "error",
+                                error: "Internal server error"
+                            };
+                            response.status(500).json(status);
+                        } else {
+                            const sqlQuery3 = {
+                                text:
+                                    'DELETE FROM gifs WHERE "gifId" = $1',
+                                values: [gifId]
+                            };
+                            await pool.query(sqlQuery3, async (error, result2) => {
+                                if (error) {
+                                    status = {
+                                        status: "error",
+                                        error: "Internal server error"
+                                    };
+                                    response.status(500).json(status);
+                                } else {
+                                    status = {
+                                        status: "success",
+                                        data: {
+                                            message: "Gif successfully deleted"
+                                        }
+                                    };
+                                    response.status(200).json(status);
+                                }
+                            });
+                        }
+                    });
+
+                }
+
+            })
+        }
+
+    } else {
+        let errorMessage = '';
+        if (!token) {
+            errorMessage = 'Invalid token';
+        } else if (!gifId) {
+            errorMessage = 'Invalid gifId';
+        }
+        status = {
+            status: 'error',
+            error: errorMessage,
+        };
+        return response.status(400).json(status);
+    }
+}
+
+const deleteInappropriateComment = async (request, response) => {
+    let status = {},
+        { commentId } = request.params
+    const token = request.headers.token;
+    if (token && commentId) {
+        const { isValid, accessLevel } = jwtVerification(token)
+        if (!isValid) {
+            status = {
+                status: "error",
+                error: "Invalid token"
+            };
+            response.status(400).json(status);
+            return;
+        } else if (accessLevel !== 'admin') {
+            status = {
+                status: 'error',
+                error: 'Sorry! only admins can access this',
+            };
+            response.status(401).json(status);
+        } else {
+
+            const sqlQuery1 = {
+                text:
+                    'SELECT * FROM "gifComments" WHERE "commentId" = $1 AND flag = $2',
+                values: [commentId, true]
+            };
+
+            await pool.query(sqlQuery1, async (error, result) => {
+                if (error) {
+                    status = {
+                        status: "error",
+                        error: "Internal server error"
+                    };
+                    response.status(500).json(status);
+                } else if (result.rows.length === 0) {
+                    status = {
+                        status: "error",
+                        error: "Couldn't find inappropriate comment"
+                    };
+                    response.status(400).json(status);
+                } else {
+
+                    const sqlQuery2 = {
+                        text:
+                            'DELETE FROM "gifComments" WHERE "commentId" = $1 ',
+                        values: [commentId]
+                    };
+
+                    await pool.query(sqlQuery2, async (error, result) => {
+                        if (error) {
+                            status = {
+                                status: "error",
+                                error: "Internal server error"
+                            };
+                            response.status(500).json(status);
+                        } else {
+                            status = {
+                                status: "success",
+                                data: {
+                                    message: "Comment successfully deleted"
+                                }
+                            };
+                            response.status(200).json(status);
+                        }
+                    });
+                }
+            })
+        }
+
+    } else {
+        let errorMessage = '';
+        if (!token) {
+            errorMessage = 'Invalid token';
+        } else if (!commentId) {
+            errorMessage = 'Invalid commentId';
+        }
+        status = {
+            status: 'error',
+            error: errorMessage,
+        };
+        return response.status(400).json(status);
+    }
+}
+
 module.exports = {
     createGif, deleteGif, commentOnGif,
-    getGif, flagGif, flagComment
+    getGif, flagGif, flagComment, deleteInappropriateGif,
+    deleteInappropriateComment
 };
