@@ -8,7 +8,7 @@ chai.use(chaiHttp);
 describe('Teamwork', () => {
     let token, articleId, commentId;
     const userCredentials = {
-        email: 'robert@gmail.com',
+        email: 'obama@gmail.com',
         password: 'pass',
     };
     describe('POST /articles', () => {
@@ -165,105 +165,5 @@ describe('Teamwork', () => {
 
         });
     });
-
-    describe('DELETE /articles/:articleId/inappropriate', () => {
-
-        before((done) => {
-            chai
-                .request(server)
-                .post('/api/v1/articles/')
-                .set('Content-Type', 'multipart/form-data')
-                .set('token', token)
-                .field('title', 'Test title')
-                .field('article', 'Lorem Ipsum Mi consectetuer magna Ullamcorper sit, elit, morbi placerat luctus maecenas pulvinar ultrices aliquet, nibh conubia duis hymenaeos facilisis aliquet pellentesque aliquam lectus nisl parturient. Lacus quam velit, ornare placerat curae;. Ut porta auctor, quam. Dolor aliquet primis mus duis interdum.')
-                .end((error, res) => {
-                    const { data } = res.body;
-                    articleId = data.articleId
-                    chai
-                        .request(server)
-                        .patch(`/api/v1/articles/${articleId}/flag`)
-                        .set('Content-Type', 'multipart/form-data')
-                        .set('token', token)
-                        .end((error, res) => {
-                            done()
-                        })
-
-                })
-        })
-
-        it('it should allow admin to delete an article flagged as inappropriate', (done) => {
-            chai
-                .request(server)
-                .delete(`/api/v1/articles/${articleId}/inappropriate`)
-                .set('Content-Type', 'multipart/form-data')
-                .set('token', token)
-                .then((res) => {
-                    res.should.have.status(200);
-                    res.body.should.have.property('status').eql('success');
-                    done();
-                })
-                .catch((err) => {
-                    console.log(err.message);
-                });
-
-        });
-    });
-
-    describe('DELETE /articles/comments/:commentId/inappropriate', () => {
-
-        before((done) => {
-            chai
-                .request(server)
-                .post('/api/v1/articles/')
-                .set('Content-Type', 'multipart/form-data')
-                .set('token', token)
-                .field('title', 'Test title')
-                .field('article', 'Lorem Ipsum Mi consectetuer magna Ullamcorper sit, elit, morbi placerat luctus maecenas pulvinar ultrices aliquet, nibh conubia duis hymenaeos facilisis aliquet pellentesque aliquam lectus nisl parturient. Lacus quam velit, ornare placerat curae;. Ut porta auctor, quam. Dolor aliquet primis mus duis interdum.')
-                .end((error, res) => {
-                    const { data } = res.body;
-                    articleId = data.articleId
-
-                    chai
-                        .request(server)
-                        .post(`/api/v1/articles/${articleId}/comment`)
-                        .set('Content-Type', 'multipart/form-data')
-                        .set('token', token)
-                        .field('comment', 'A new comment on a post')
-                        .end((error, res) => {
-                            const { data } = res.body;
-                            commentId = data.commentId
-
-                            chai
-                                .request(server)
-                                .patch(`/api/v1/articles/comments/${commentId}/flag`)
-                                .set('Content-Type', 'multipart/form-data')
-                                .set('token', token)
-                                .end((error, res) => {
-                                    done()
-                                })
-
-                        })
-
-                })
-        })
-
-        it('it should allow admin to delete a comment flagged as inappropriate', (done) => {
-            chai
-                .request(server)
-                .delete(`/api/v1/articles/comments/${commentId}/inappropriate`)
-                .set('Content-Type', 'multipart/form-data')
-                .set('token', token)
-                .then((res) => {
-                    res.should.have.status(200);
-                    res.body.should.have.property('status').eql('success');
-                    done();
-                })
-                .catch((err) => {
-                    console.log(err.message);
-                });
-
-        });
-    });
-
 
 });
