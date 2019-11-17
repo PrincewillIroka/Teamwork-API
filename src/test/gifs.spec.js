@@ -7,7 +7,7 @@ const server = require('../index');
 chai.use(chaiHttp);
 
 describe('Teamwork', () => {
-    let token, gifId;
+    let token, gifId, commentId;
     const userCredentials = {
         email: 'obama@gmail.com',
         password: 'pass',
@@ -55,6 +55,8 @@ describe('Teamwork', () => {
                 .set('token', token)
                 .field('comment', 'A new comment on a gif')
                 .then((res) => {
+                    const { data } = res.body;
+                    commentId = data.commentId
                     res.should.have.status(201);
                     res.body.should.have.property('status').eql('success');
                     done();
@@ -82,6 +84,44 @@ describe('Teamwork', () => {
                 .catch((err) => {
                     console.log(err.message);
                 });
+
+        });
+    });
+
+    describe('PATCH /gifs/:gifId/flag', () => {
+        it('it should allow user to flag an gif as inappropriate', (done) => {
+            chai
+                .request(server)
+                .patch(`/api/v1/gifs/${gifId}/flag`)
+                .set('Content-Type', 'multipart/form-data')
+                .set('token', token)
+                .then((res) => {
+                    res.should.have.status(200);
+                    res.body.should.have.property('status').eql('success');
+                })
+                .catch((err) => {
+                    console.log(err.message);
+                });
+            done();
+
+        });
+    });
+
+    describe('PATCH /gifs/comments/:commentId/flag', () => {
+        it('it should allow user to flag a comment as inappropriate', (done) => {
+            chai
+                .request(server)
+                .patch(`/api/v1/gifs/comments/${commentId}/flag`)
+                .set('Content-Type', 'multipart/form-data')
+                .set('token', token)
+                .then((res) => {
+                    res.should.have.status(200);
+                    res.body.should.have.property('status').eql('success');
+                })
+                .catch((err) => {
+                    console.log(err.message);
+                });
+            done();
 
         });
     });

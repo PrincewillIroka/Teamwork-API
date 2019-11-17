@@ -114,7 +114,7 @@ const editArticle = async (request, response) => {
                             'UPDATE articles SET "title" = $1, "article" = $2 WHERE "articleId" = $3 AND "userId" = $4 RETURNING *',
                         values: [title, article, articleId, userId]
                     };
-                    await pool.query(sqlQuery2, (error, result) => {
+                    await pool.query(sqlQuery2, (error, result2) => {
                         if (error) {
                             status = {
                                 status: "error",
@@ -297,7 +297,7 @@ const commentOnArticle = async (request, response) => {
                         };
                         response.status(500).json(status);
                     } else {
-                        const { createdOn } = result2.rows[0]
+                        const { commentId, createdOn } = result2.rows[0]
                         status = {
                             status: "success",
                             data: {
@@ -305,7 +305,8 @@ const commentOnArticle = async (request, response) => {
                                 createdOn,
                                 articleTitle: title,
                                 article,
-                                comment
+                                comment,
+                                commentId
                             }
                         };
                         response.status(201).json(status);
@@ -421,4 +422,134 @@ const getArticle = async (request, response) => {
     }
 }
 
-module.exports = { createArticle, editArticle, deleteArticle, commentOnArticle, getArticle }
+const flagArticle = async (request, response) => {
+    let status = {},
+        { articleId } = request.params,
+        token = request.headers.token;
+
+    if (token) {
+        const { isValid } = jwtVerification(token)
+        if (!isValid) {
+            status = {
+                status: "error",
+                error: "Invalid token"
+            };
+            response.status(400).json(status);
+            return;
+        }
+
+        const sqlQuery = {
+            text:
+                'UPDATE articles SET "flag" = $1 WHERE "articleId" = $2 RETURNING *',
+            values: [true, articleId]
+        };
+        await pool.query(sqlQuery, (error, result) => {
+            if (error) {
+                status = {
+                    status: "error",
+                    error: "Internal server error"
+                };
+                response.status(500).json(status);
+            } else if (result.rows.length === 0) {
+                status = {
+                    status: "error",
+                    error: "Article doesn't exist"
+                };
+                response.status(400).json(status);
+            }
+            else {
+                const { title, article, flag } = result.rows[0]
+                status = {
+                    status: "success",
+                    data: {
+                        message: "Article flagged as in appropriate",
+                        title,
+                        article,
+                        flag
+                    }
+                };
+                response.status(200).json(status);
+            }
+        });
+
+
+    } else {
+        let errorMessage = '';
+        if (!token) {
+            errorMessage = 'Invalid token';
+        }
+        status = {
+            status: 'error',
+            error: errorMessage,
+        };
+        return response.status(400).json(status);
+    }
+}
+
+const flagComment = async (request, response) => {
+    let status = {},
+        { commentId } = request.params,
+        token = request.headers.token;
+
+    if (token) {
+        const { isValid } = jwtVerification(token)
+        if (!isValid) {
+            status = {
+                status: "error",
+                error: "Invalid token"
+            };
+            response.status(400).json(status);
+            return;
+        }
+
+        const sqlQuery = {
+            text:
+                'UPDATE "articleComments" SET "flag" = $1 WHERE "commentId" = $2 RETURNING *',
+            values: [true, commentId]
+        };
+        await pool.query(sqlQuery, (error, result) => {
+            if (error) {
+                status = {
+                    status: "error",
+                    error: "Internal server error"
+                };
+                response.status(500).json(status);
+            } else if (result.rows.length === 0) {
+                status = {
+                    status: "error",
+                    error: "Article doesn't exist"
+                };
+                response.status(400).json(status);
+            }
+            else {
+                const { comment, flag } = result.rows[0]
+                status = {
+                    status: "success",
+                    data: {
+                        message: "Comment flagged as in appropriate",
+                        comment,
+                        flag
+                    }
+                };
+                response.status(200).json(status);
+            }
+        });
+
+    } else {
+        let errorMessage = '';
+        if (!token) {
+            errorMessage = 'Invalid token';
+        }
+        status = {
+            status: 'error',
+            error: errorMessage,
+        };
+        return response.status(400).json(status);
+    }
+}
+
+module.exports = {
+    createArticle, editArticle, deleteArticle,
+    commentOnArticle, getArticle, flagArticle,
+    flagComment
+}
