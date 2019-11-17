@@ -249,14 +249,15 @@ const commentOnGif = async (request, response) => {
                         };
                         response.status(500).json(status);
                     } else {
-                        const { createdOn } = result2.rows[0]
+                        const { commentId, createdOn } = result2.rows[0]
                         status = {
                             status: "success",
                             data: {
                                 message: "Comment successfully created",
                                 createdOn,
                                 gifTitle: title,
-                                comment
+                                comment,
+                                commentId
                             }
                         };
                         response.status(201).json(status);
@@ -372,4 +373,132 @@ const getGif = async (request, response) => {
     }
 }
 
-module.exports = { createGif, deleteGif, commentOnGif, getGif };
+const flagGif = async (request, response) => {
+    let status = {},
+        { gifId } = request.params,
+        token = request.headers.token;
+
+    if (token) {
+        const { isValid } = jwtVerification(token)
+        if (!isValid) {
+            status = {
+                status: "error",
+                error: "Invalid token"
+            };
+            response.status(400).json(status);
+            return;
+        }
+
+        const sqlQuery = {
+            text:
+                'UPDATE gifs SET "flag" = $1 WHERE "gifId" = $2 RETURNING *',
+            values: [true, gifId]
+        };
+        await pool.query(sqlQuery, (error, result) => {
+            if (error) {
+                status = {
+                    status: "error",
+                    error: "Internal server error"
+                };
+                response.status(500).json(status);
+            } else if (result.rows.length === 0) {
+                status = {
+                    status: "error",
+                    error: "Gif doesn't exist"
+                };
+                response.status(400).json(status);
+            }
+            else {
+                const { title, flag } = result.rows[0]
+                status = {
+                    status: "success",
+                    data: {
+                        message: "Gif flagged as in appropriate",
+                        title,
+                        flag
+                    }
+                };
+                response.status(200).json(status);
+            }
+        });
+
+    } else {
+        let errorMessage = '';
+        if (!token) {
+            errorMessage = 'Invalid token';
+        }
+        status = {
+            status: 'error',
+            error: errorMessage,
+        };
+        return response.status(400).json(status);
+    }
+}
+
+const flagComment = async (request, response) => {
+    let status = {},
+        { commentId } = request.params,
+        token = request.headers.token;
+
+    if (token) {
+        const { isValid } = jwtVerification(token)
+        if (!isValid) {
+            status = {
+                status: "error",
+                error: "Invalid token"
+            };
+            response.status(400).json(status);
+            return;
+        }
+
+        const sqlQuery = {
+            text:
+                'UPDATE "gifComments" SET "flag" = $1 WHERE "commentId" = $2 RETURNING *',
+            values: [true, commentId]
+        };
+        await pool.query(sqlQuery, (error, result) => {
+
+            if (error) {
+                status = {
+                    status: "error",
+                    error: "Internal server error"
+                };
+                response.status(500).json(status);
+            } else if (result.rows.length === 0) {
+                status = {
+                    status: "error",
+                    error: "Comment doesn't exist"
+                };
+                response.status(400).json(status);
+            }
+            else {
+                const { comment, flag } = result.rows[0]
+                status = {
+                    status: "success",
+                    data: {
+                        message: "Comment flagged as in appropriate",
+                        comment,
+                        flag
+                    }
+                };
+                response.status(200).json(status);
+            }
+        });
+
+    } else {
+        let errorMessage = '';
+        if (!token) {
+            errorMessage = 'Invalid token';
+        }
+        status = {
+            status: 'error',
+            error: errorMessage,
+        };
+        return response.status(400).json(status);
+    }
+}
+
+module.exports = {
+    createGif, deleteGif, commentOnGif,
+    getGif, flagGif, flagComment
+};

@@ -26,6 +26,14 @@ app.use('/api/v1/gifs', gifsRoute);
 app.use('/api/v1/articles', articlesRoute);
 app.use('/api/v1/feed', feedRoute);
 
+app.get('/', function (req, res) {
+  res.status(200).json({ message: 'Welcome to Teamwork API' });
+});
+
+app.use(function (req, res) {
+  res.status(404).json({ message: 'Sorry, page not found' });
+});
+
 const port = process.env.APP_PORT || process.env.PORT || 3002
 const server = app.listen(port, () => {
   console.log(`Server listening on ${port}`);
