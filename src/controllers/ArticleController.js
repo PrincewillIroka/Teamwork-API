@@ -333,4 +333,92 @@ const commentOnArticle = async (request, response) => {
     }
 }
 
-module.exports = { createArticle, editArticle, deleteArticle, commentOnArticle }
+const getArticle = async (request, response) => {
+    let status = {},
+        { articleId } = request.params, token = request.headers.token;
+
+    if (token) {
+        const { isValid, userId } = jwtVerification(token)
+        if (!isValid) {
+            status = {
+                status: "error",
+                error: "Invalid token"
+            };
+            response.status(400).json(status);
+            return;
+        }
+        const sqlQuery1 = {
+            text:
+                'SELECT * FROM articles WHERE "articleId" = $1',
+            values: [articleId]
+        };
+
+        await pool.query(sqlQuery1, async (error, result) => {
+            if (error) {
+                status = {
+                    status: "error",
+                    error: "Internal server error"
+                };
+                response.status(500).json(status);
+            } else if (result.rows.length === 0) {
+                status = {
+                    status: "error",
+                    error: "Article doesn't exist"
+                };
+                response.status(400).json(status);
+            }
+            else {
+                const sqlQuery2 = {
+                    text:
+                        'SELECT * FROM "articleComments" WHERE "articleId" = $1',
+                    values: [articleId]
+                };
+                await pool.query(sqlQuery2, async (error, result2) => {
+                    if (error) {
+                        status = {
+                            status: "error",
+                            error: "Internal server error"
+                        };
+                        response.status(500).json(status);
+                    } else {
+                        const article = result.rows[0]
+                        const comments = result2.rows
+                        comments.map(comment => {
+                            comment.authorId = comment.userId
+                            delete comment.articleId
+                            delete comment.userId
+                            return comment
+                        })
+                        status = {
+                            status: "success",
+                            data: {
+                                id: articleId,
+                                createdOn: article.createdOn,
+                                title: article.title,
+                                article: article.article,
+                                comments
+                            }
+                        };
+                        response.status(200).json(status);
+                    }
+
+                })
+
+
+            }
+        });
+
+    } else {
+        let errorMessage = '';
+        if (!token) {
+            errorMessage = 'Invalid token';
+        }
+        status = {
+            status: 'error',
+            error: errorMessage,
+        };
+        return response.status(400).json(status);
+    }
+}
+
+module.exports = { createArticle, editArticle, deleteArticle, commentOnArticle, getArticle }
