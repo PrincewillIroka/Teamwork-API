@@ -284,4 +284,92 @@ const commentOnGif = async (request, response) => {
     }
 }
 
-module.exports = { createGif, deleteGif, commentOnGif };
+const getGif = async (request, response) => {
+    let status = {},
+        { gifId } = request.params, token = request.headers.token;
+
+    if (token) {
+        const { isValid } = jwtVerification(token)
+        if (!isValid) {
+            status = {
+                status: "error",
+                error: "Invalid token"
+            };
+            response.status(400).json(status);
+            return;
+        }
+        const sqlQuery1 = {
+            text:
+                'SELECT * FROM gifs WHERE "gifId" = $1',
+            values: [gifId]
+        };
+
+        await pool.query(sqlQuery1, async (error, result) => {
+            if (error) {
+                status = {
+                    status: "error",
+                    error: "Internal server error"
+                };
+                response.status(500).json(status);
+            } else if (result.rows.length === 0) {
+                status = {
+                    status: "error",
+                    error: "Gif doesn't exist"
+                };
+                response.status(400).json(status);
+            }
+            else {
+                const sqlQuery2 = {
+                    text:
+                        'SELECT * FROM "gifComments" WHERE "gifId" = $1',
+                    values: [gifId]
+                };
+                await pool.query(sqlQuery2, async (error, result2) => {
+                    if (error) {
+                        status = {
+                            status: "error",
+                            error: "Internal server error"
+                        };
+                        response.status(500).json(status);
+                    } else {
+                        const gif = result.rows[0]
+                        const comments = result2.rows
+                        comments.map(comment => {
+                            comment.authorId = comment.userId
+                            delete comment.gifId
+                            delete comment.userId
+                            return comment
+                        })
+                        status = {
+                            status: "success",
+                            data: {
+                                id: gifId,
+                                createdOn: gif.createdOn,
+                                title: gif.title,
+                                gif: gif.gif,
+                                comments
+                            }
+                        };
+                        response.status(200).json(status);
+                    }
+
+                })
+
+
+            }
+        });
+
+    } else {
+        let errorMessage = '';
+        if (!token) {
+            errorMessage = 'Invalid token';
+        }
+        status = {
+            status: 'error',
+            error: errorMessage,
+        };
+        return response.status(400).json(status);
+    }
+}
+
+module.exports = { createGif, deleteGif, commentOnGif, getGif };

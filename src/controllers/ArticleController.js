@@ -338,7 +338,7 @@ const getArticle = async (request, response) => {
         { articleId } = request.params, token = request.headers.token;
 
     if (token) {
-        const { isValid, userId } = jwtVerification(token)
+        const { isValid } = jwtVerification(token)
         if (!isValid) {
             status = {
                 status: "error",

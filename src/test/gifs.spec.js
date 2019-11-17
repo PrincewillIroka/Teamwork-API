@@ -66,6 +66,26 @@ describe('Teamwork', () => {
         });
     });
 
+    describe('GET /gifs/:gifId', () => {
+        it('it should allow user to view a specific gif', (done) => {
+            chai
+                .request(server)
+                .get(`/api/v1/gifs/${gifId}`)
+                .set('Content-Type', 'multipart/form-data')
+                .set('token', token)
+                .then((res) => {
+                    res.should.have.status(200);
+                    res.body.should.have.property('status').eql('success');
+                    res.body.should.have.property('data').to.be.an('object')
+                    done();
+                })
+                .catch((err) => {
+                    console.log(err.message);
+                });
+
+        });
+    });
+
     describe('DELETE /gifs/:gifId', () => {
         it('it should allow user to delete a gif', (done) => {
             chai
