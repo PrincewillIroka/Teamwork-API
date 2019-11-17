@@ -9,7 +9,7 @@ chai.use(chaiHttp);
 describe('Teamwork', () => {
     let token, gifId, commentId;
     const userCredentials = {
-        email: 'obama@gmail.com',
+        email: 'robert@gmail.com',
         password: 'pass',
     };
     describe('POST /gifs', () => {
@@ -131,6 +131,105 @@ describe('Teamwork', () => {
             chai
                 .request(server)
                 .delete(`/api/v1/gifs/${gifId}`)
+                .set('Content-Type', 'multipart/form-data')
+                .set('token', token)
+                .then((res) => {
+                    res.should.have.status(200);
+                    res.body.should.have.property('status').eql('success');
+                    done();
+                })
+                .catch((err) => {
+                    console.log(err.message);
+                });
+
+        });
+    });
+
+    describe('DELETE /gifs/:gifId/inappropriate', () => {
+
+        before((done) => {
+            chai
+                .request(server)
+                .post('/api/v1/gifs/')
+                .set('Content-Type', 'multipart/form-data')
+                .set('token', token)
+                .field('title', 'My New Gif')
+                .attach('gif', fs.readFileSync('./src/test/gif.gif'), 'gif.gif')
+                .end((error, res) => {
+                    const { data } = res.body;
+                    gifId = data.gifId
+                    chai
+                        .request(server)
+                        .patch(`/api/v1/gifs/${gifId}/flag`)
+                        .set('Content-Type', 'multipart/form-data')
+                        .set('token', token)
+                        .end((error, res) => {
+                            done()
+                        })
+
+                })
+        })
+
+        it('it should allow admin to delete a gif flagged as inappropriate', (done) => {
+            chai
+                .request(server)
+                .delete(`/api/v1/gifs/${gifId}/inappropriate`)
+                .set('Content-Type', 'multipart/form-data')
+                .set('token', token)
+                .then((res) => {
+                    res.should.have.status(200);
+                    res.body.should.have.property('status').eql('success');
+                    done();
+                })
+                .catch((err) => {
+                    console.log(err.message);
+                });
+
+        });
+    });
+
+    describe('DELETE /gifs/comments/:commentId/inappropriate', () => {
+
+        before((done) => {
+            chai
+                .request(server)
+                .post('/api/v1/gifs/')
+                .set('Content-Type', 'multipart/form-data')
+                .set('token', token)
+                .field('title', 'My New Gif')
+                .attach('gif', fs.readFileSync('./src/test/gif.gif'), 'gif.gif')
+                .end((error, res) => {
+                    const { data } = res.body;
+                    gifId = data.gifId
+
+                    chai
+                        .request(server)
+                        .post(`/api/v1/gifs/${gifId}/comment`)
+                        .set('Content-Type', 'multipart/form-data')
+                        .set('token', token)
+                        .field('comment', 'A new comment on a post')
+                        .end((error, res) => {
+                            const { data } = res.body;
+                            commentId = data.commentId
+
+                            chai
+                                .request(server)
+                                .patch(`/api/v1/gifs/comments/${commentId}/flag`)
+                                .set('Content-Type', 'multipart/form-data')
+                                .set('token', token)
+                                .end((error, res) => {
+                                    done()
+                                })
+
+                        })
+
+                })
+        })
+
+        it('it should allow admin to delete a comment flagged as inappropriate', (done) => {
+            chai
+                .request(server)
+                .delete(`/api/v1/gifs/comments/${commentId}/inappropriate`)
                 .set('Content-Type', 'multipart/form-data')
                 .set('token', token)
                 .then((res) => {
