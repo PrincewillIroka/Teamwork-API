@@ -87,6 +87,26 @@ describe('Teamwork', () => {
         });
     });
 
+    describe('GET /articles/:articleId', () => {
+        it('it should allow user to view a specific article', (done) => {
+            chai
+                .request(server)
+                .get(`/api/v1/articles/${articleId}`)
+                .set('Content-Type', 'multipart/form-data')
+                .set('token', token)
+                .then((res) => {
+                    res.should.have.status(200);
+                    res.body.should.have.property('status').eql('success');
+                    res.body.should.have.property('data').to.be.an('object')
+                    done();
+                })
+                .catch((err) => {
+                    console.log(err.message);
+                });
+
+        });
+    });
+
     describe('DELETE /articles/:articleId', () => {
         it('it should allow user to delete an article', (done) => {
             chai
