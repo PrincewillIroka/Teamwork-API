@@ -3,7 +3,7 @@ const jwtVerification = require("../middleware/jwt-verify");
 
 const createArticle = async (request, response) => {
     let status = {},
-        { title, article } = request.body;
+        { title, article, categoryId } = request.body;
     const token = request.headers.token;
 
     if (title && token && article) {
@@ -17,10 +17,23 @@ const createArticle = async (request, response) => {
             return;
         }
 
+        let catId = 0
+        if (categoryId && isNaN(categoryId)) {
+            status = {
+                status: "error",
+                error: "Invalid categoryId"
+            };
+            response.status(400).json(status);
+            return;
+        } else if (categoryId) {
+            catId = categoryId
+        }
+
+
         const sqlQuery = {
             text:
-                'INSERT INTO articles ("title", "article", "userId") VALUES($1, $2, $3) RETURNING *',
-            values: [title, article, userId]
+                'INSERT INTO articles ("title", "article", "userId", "categoryId") VALUES($1, $2, $3, $4) RETURNING *',
+            values: [title, article, userId, catId]
         };
         await pool.query(sqlQuery, (error, result) => {
             if (error) {
@@ -68,7 +81,7 @@ const editArticle = async (request, response) => {
         { title, article } = request.body;
     const token = request.headers.token;
 
-    if (title && token && article) {
+    if (title && token && article && articleId && !isNaN(articleId)) {
         const { isValid, userId } = jwtVerification(token)
         let verifiedUserId = userId
         if (!isValid) {
@@ -147,6 +160,8 @@ const editArticle = async (request, response) => {
             errorMessage = 'Invalid token';
         } else if (!article) {
             errorMessage = 'Invalid article';
+        } else if (!articleId || isNaN(articleId)) {
+            errorMessage = 'Invalid articleId';
         }
         status = {
             status: 'error',
@@ -161,7 +176,7 @@ const deleteArticle = async (request, response) => {
         { articleId } = request.params
     const token = request.headers.token;
 
-    if (token && articleId) {
+    if (token && articleId && !isNaN(articleId)) {
         const { isValid, userId } = jwtVerification(token)
         let verifiedUserId = userId
         if (!isValid) {
@@ -232,7 +247,7 @@ const deleteArticle = async (request, response) => {
         let errorMessage = '';
         if (!token) {
             errorMessage = 'Invalid token';
-        } else if (!articleId) {
+        } else if (!articleId || isNaN(articleId)) {
             errorMessage = 'Invalid articleId';
         }
         status = {
@@ -248,7 +263,7 @@ const commentOnArticle = async (request, response) => {
         { comment } = request.body,
         { articleId } = request.params
     const token = request.headers.token;
-    if (token && articleId && comment) {
+    if (token && articleId && !isNaN(articleId) && comment) {
         const { isValid, userId } = jwtVerification(token)
         if (!isValid) {
             status = {
@@ -321,7 +336,7 @@ const commentOnArticle = async (request, response) => {
         let errorMessage = '';
         if (!token) {
             errorMessage = 'Invalid token';
-        } else if (!articleId) {
+        } else if (!articleId || isNaN(articleId)) {
             errorMessage = 'Invalid articleId';
         } else if (!comment) {
             errorMessage = 'Invalid comment';
@@ -427,7 +442,7 @@ const flagArticle = async (request, response) => {
         { articleId } = request.params,
         token = request.headers.token;
 
-    if (token) {
+    if (token && articleId && !isNaN(articleId)) {
         const { isValid } = jwtVerification(token)
         if (!isValid) {
             status = {
@@ -477,6 +492,8 @@ const flagArticle = async (request, response) => {
         let errorMessage = '';
         if (!token) {
             errorMessage = 'Invalid token';
+        } else if (!articleId || isNaN(articleId)) {
+            errorMessage = 'Invalid articleId';
         }
         status = {
             status: 'error',
@@ -491,7 +508,7 @@ const flagComment = async (request, response) => {
         { commentId } = request.params,
         token = request.headers.token;
 
-    if (token) {
+    if (token && commentId && !isNaN(commentId)) {
         const { isValid } = jwtVerification(token)
         if (!isValid) {
             status = {
@@ -539,6 +556,8 @@ const flagComment = async (request, response) => {
         let errorMessage = '';
         if (!token) {
             errorMessage = 'Invalid token';
+        } else if (!commentId || isNaN(commentId)) {
+            errorMessage = 'Invalid commentId';
         }
         status = {
             status: 'error',
@@ -552,7 +571,7 @@ const deleteInappropriateArticle = async (request, response) => {
     let status = {},
         { articleId } = request.params
     const token = request.headers.token;
-    if (token && articleId) {
+    if (token && articleId && !isNaN(articleId)) {
         const { isValid, accessLevel } = jwtVerification(token)
         if (!isValid) {
             status = {
@@ -637,7 +656,7 @@ const deleteInappropriateArticle = async (request, response) => {
         let errorMessage = '';
         if (!token) {
             errorMessage = 'Invalid token';
-        } else if (!articleId) {
+        } else if (!articleId || isNaN(articleId)) {
             errorMessage = 'Invalid articleId';
         }
         status = {
@@ -652,7 +671,7 @@ const deleteInappropriateComment = async (request, response) => {
     let status = {},
         { commentId } = request.params
     const token = request.headers.token;
-    if (token && commentId) {
+    if (token && commentId && !isNaN(commentId)) {
         const { isValid, accessLevel } = jwtVerification(token)
         if (!isValid) {
             status = {
@@ -721,7 +740,7 @@ const deleteInappropriateComment = async (request, response) => {
         let errorMessage = '';
         if (!token) {
             errorMessage = 'Invalid token';
-        } else if (!commentId) {
+        } else if (!commentId || isNaN(commentId)) {
             errorMessage = 'Invalid commentId';
         }
         status = {
@@ -732,8 +751,129 @@ const deleteInappropriateComment = async (request, response) => {
     }
 }
 
+const createCategory = async (request, response) => {
+    let status = {},
+        { category } = request.body
+    const token = request.headers.token;
+    if (token && category) {
+        let { isValid, accessLevel } = jwtVerification(token)
+        if (!isValid) {
+            status = {
+                status: 'error',
+                error: 'Invalid token',
+            };
+            response.status(400).json(status);
+        } else if (accessLevel !== 'admin') {
+            status = {
+                status: 'error',
+                error: 'Sorry! only admins can access this',
+            };
+            response.status(401).json(status);
+        } else {
+            const sqlQuery = {
+                text:
+                    'INSERT INTO categories ("category") VALUES($1) RETURNING *',
+                values: [category]
+            };
+            await pool.query(sqlQuery, (error, result) => {
+                if (error) {
+                    status = {
+                        status: "error",
+                        error: "Internal server error"
+                    };
+                    response.status(500).json(status);
+                } else {
+                    const { categoryId } = result.rows[0]
+                    status = {
+                        status: "success",
+                        data: {
+                            message: "Category successfully added",
+                            categoryId
+                        }
+                    };
+                    response.status(201).json(status);
+                }
+            });
+        }
+    } else {
+        let errorMessage = '';
+        if (!token) {
+            errorMessage = 'Invalid token';
+        } else if (!category) {
+            errorMessage = 'Invalid category';
+        }
+        status = {
+            status: 'error',
+            error: errorMessage,
+        };
+        return response.status(400).json(status);
+    }
+}
+
+const getArticlesByCategory = async (request, response) => {
+    let status = {},
+        { categoryId } = request.params, token = request.headers.token;
+
+    if (token && categoryId && !isNaN(categoryId)) {
+        const { isValid } = jwtVerification(token)
+        if (!isValid) {
+            status = {
+                status: "error",
+                error: "Invalid token"
+            };
+            response.status(400).json(status);
+            return;
+        }
+        const sqlQuery = {
+            text:
+                'SELECT * FROM articles WHERE "categoryId" = $1',
+            values: [categoryId]
+        };
+
+        await pool.query(sqlQuery, async (error, result) => {
+            if (error) {
+                status = {
+                    status: "error",
+                    error: "Internal server error"
+                };
+                response.status(500).json(status);
+            } else {
+                const articles = result.rows
+                if (articles.length > 0) {
+                    articles.map(article => {
+                        article.id = article.articleId
+                        delete article.id
+                        return article
+                    })
+                }
+
+                status = {
+                    status: "success",
+                    data: articles
+                };
+                response.status(200).json(status);
+            }
+        });
+
+    } else {
+        let errorMessage = '';
+        if (!token) {
+            errorMessage = 'Invalid token';
+        } else if (!categoryId || isNaN(categoryId)) {
+            errorMessage = 'Invalid categoryId';
+        }
+        status = {
+            status: 'error',
+            error: errorMessage,
+        };
+        return response.status(400).json(status);
+    }
+
+}
+
 module.exports = {
     createArticle, editArticle, deleteArticle,
     commentOnArticle, getArticle, flagArticle,
-    flagComment, deleteInappropriateArticle, deleteInappropriateComment
+    flagComment, deleteInappropriateArticle, deleteInappropriateComment,
+    createCategory, getArticlesByCategory
 }

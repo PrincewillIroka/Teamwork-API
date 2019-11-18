@@ -102,7 +102,7 @@ const deleteGif = async (request, response) => {
         { gifId } = request.params
     const token = request.headers.token;
 
-    if (token && gifId) {
+    if (token && gifId && !isNaN(gifId)) {
         const { isValid, userId } = jwtVerification(token)
         let verifiedUserId = userId
         if (!isValid) {
@@ -185,7 +185,7 @@ const deleteGif = async (request, response) => {
         let errorMessage = '';
         if (!token) {
             errorMessage = 'Invalid token';
-        } else if (!gifId) {
+        } else if (!gifId || isNaN(gifId)) {
             errorMessage = 'Invalid gifId';
         }
         status = {
@@ -201,7 +201,7 @@ const commentOnGif = async (request, response) => {
         { comment } = request.body,
         { gifId } = request.params
     const token = request.headers.token;
-    if (token && gifId && comment) {
+    if (token && gifId && !isNaN(gifId) && comment) {
         const { isValid, userId } = jwtVerification(token)
         if (!isValid) {
             status = {
@@ -272,7 +272,7 @@ const commentOnGif = async (request, response) => {
         let errorMessage = '';
         if (!token) {
             errorMessage = 'Invalid token';
-        } else if (!gifId) {
+        } else if (!gifId && isNaN(gifId)) {
             errorMessage = 'Invalid gifId';
         } else if (!comment) {
             errorMessage = 'Invalid comment';
@@ -289,7 +289,7 @@ const getGif = async (request, response) => {
     let status = {},
         { gifId } = request.params, token = request.headers.token;
 
-    if (token) {
+    if (token && gifId && !isNaN(gifId)) {
         const { isValid } = jwtVerification(token)
         if (!isValid) {
             status = {
@@ -364,6 +364,8 @@ const getGif = async (request, response) => {
         let errorMessage = '';
         if (!token) {
             errorMessage = 'Invalid token';
+        } else if (!gifId || isNaN(gifId)) {
+            errorMessage = 'Invalid gifId'
         }
         status = {
             status: 'error',
@@ -378,7 +380,7 @@ const flagGif = async (request, response) => {
         { gifId } = request.params,
         token = request.headers.token;
 
-    if (token) {
+    if (token && gifId && !isNaN(gifId)) {
         const { isValid } = jwtVerification(token)
         if (!isValid) {
             status = {
@@ -426,6 +428,8 @@ const flagGif = async (request, response) => {
         let errorMessage = '';
         if (!token) {
             errorMessage = 'Invalid token';
+        } else if (!gifId || isNaN(gifId)) {
+            errorMessage = 'Invalid gifId'
         }
         status = {
             status: 'error',
@@ -440,7 +444,7 @@ const flagComment = async (request, response) => {
         { commentId } = request.params,
         token = request.headers.token;
 
-    if (token) {
+    if (token && commentId && !isNaN(commentId)) {
         const { isValid } = jwtVerification(token)
         if (!isValid) {
             status = {
@@ -489,6 +493,8 @@ const flagComment = async (request, response) => {
         let errorMessage = '';
         if (!token) {
             errorMessage = 'Invalid token';
+        } else if (!commentId || isNaN(commentId)) {
+            errorMessage = 'Invalid commentId'
         }
         status = {
             status: 'error',
@@ -502,7 +508,7 @@ const deleteInappropriateGif = async (request, response) => {
     let status = {},
         { gifId } = request.params
     const token = request.headers.token;
-    if (token && gifId) {
+    if (token && gifId && !isNaN(gifId)) {
         const { isValid, accessLevel } = jwtVerification(token)
         if (!isValid) {
             status = {
@@ -587,7 +593,7 @@ const deleteInappropriateGif = async (request, response) => {
         let errorMessage = '';
         if (!token) {
             errorMessage = 'Invalid token';
-        } else if (!gifId) {
+        } else if (!gifId || isNaN(gifId)) {
             errorMessage = 'Invalid gifId';
         }
         status = {
@@ -602,7 +608,7 @@ const deleteInappropriateComment = async (request, response) => {
     let status = {},
         { commentId } = request.params
     const token = request.headers.token;
-    if (token && commentId) {
+    if (token && commentId && !isNaN(commentId)) {
         const { isValid, accessLevel } = jwtVerification(token)
         if (!isValid) {
             status = {
@@ -671,7 +677,7 @@ const deleteInappropriateComment = async (request, response) => {
         let errorMessage = '';
         if (!token) {
             errorMessage = 'Invalid token';
-        } else if (!commentId) {
+        } else if (!commentId || isNaN(commentId)) {
             errorMessage = 'Invalid commentId';
         }
         status = {
