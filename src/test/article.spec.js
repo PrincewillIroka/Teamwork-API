@@ -6,7 +6,7 @@ const server = require('../index');
 chai.use(chaiHttp);
 
 describe('Teamwork', () => {
-    let token, articleId, commentId;
+    let token, articleId, commentId, categoryId;
     const userCredentials = {
         email: 'robert@gmail.com',
         password: 'pass',
@@ -256,6 +256,48 @@ describe('Teamwork', () => {
                 .then((res) => {
                     res.should.have.status(200);
                     res.body.should.have.property('status').eql('success');
+                    done();
+                })
+                .catch((err) => {
+                    console.log(err.message);
+                });
+
+        });
+    });
+
+    describe('POST /articles/category', () => {
+        it('it should allow admin to add new category', (done) => {
+            chai
+                .request(server)
+                .post(`/api/v1/articles/category`)
+                .set('Content-Type', 'multipart/form-data')
+                .set('token', token)
+                .field('category', 'Sports')
+                .then((res) => {
+                    const { data } = res.body;
+                    categoryId = data.categoryId
+                    res.should.have.status(201);
+                    res.body.should.have.property('status').eql('success');
+                    done();
+                })
+                .catch((err) => {
+                    console.log(err.message);
+                });
+
+        });
+    });
+
+    describe('GET /articles/categories/:categoryId', () => {
+        it('it should allow user to view articles by category', (done) => {
+            chai
+                .request(server)
+                .get(`/api/v1/articles/categories/${categoryId}`)
+                .set('Content-Type', 'multipart/form-data')
+                .set('token', token)
+                .then((res) => {
+                    res.should.have.status(200);
+                    res.body.should.have.property('status').eql('success');
+                    res.body.should.have.property('data').to.be.an('array')
                     done();
                 })
                 .catch((err) => {
