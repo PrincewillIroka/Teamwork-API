@@ -24,7 +24,6 @@ const createUser = (request, response) => {
         address,
         token,
     } = request.body;
-    console.log(request.body)
 
     if (firstName && lastName && email && isValidEmail(email) && password
         && gender && jobRole && department && address && token) {
@@ -144,7 +143,7 @@ const createUser = (request, response) => {
 const signIn = (request, response) => {
     let status = {};
     const { email, password } = request.body;
-    console.log(request.body)
+    console.log(request)
 
     if (email && password && isValidEmail(email)) {
         const sqlQuery = {
