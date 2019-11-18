@@ -30,6 +30,18 @@ app.get('/', function (req, res) {
   res.status(200).json({ message: 'Welcome to Teamwork API' });
 });
 
+app.options('/*', (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, Content, Accept, Content-Type, Authorization, Content-Length, X-Requested-With');
+  res.sendStatus(200);
+});
+
+app.all('*', (req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  next();
+});
+
 app.use(function (req, res) {
   res.status(404).json({ message: 'Sorry, page not found' });
 });
