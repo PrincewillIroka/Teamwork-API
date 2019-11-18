@@ -5,5 +5,5 @@ CREATE TABLE IF NOT EXISTS articles (
   "userId" SERIAL REFERENCES users ("userId"),
   "createdOn" VARCHAR(255) NOT NULL,
   "flag" BOOLEAN NOT NULL DEFAULT false,
-  "categoryId" VARCHAR(255) NOT NULL
+  "categoryId" SERIAL REFERENCES categories ("categoryId")
 );

@@ -353,7 +353,7 @@ const getArticle = async (request, response) => {
     let status = {},
         { articleId } = request.params, token = request.headers.token;
 
-    if (token) {
+    if (token && articleId && !isNaN(articleId)) {
         const { isValid } = jwtVerification(token)
         if (!isValid) {
             status = {
@@ -428,6 +428,8 @@ const getArticle = async (request, response) => {
         let errorMessage = '';
         if (!token) {
             errorMessage = 'Invalid token';
+        } else if (!articleId || isNaN(articleId)) {
+            errorMessage = 'Invalid articleId';
         }
         status = {
             status: 'error',
