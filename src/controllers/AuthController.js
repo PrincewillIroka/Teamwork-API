@@ -12,6 +12,7 @@ const isValidEmail = (email) => {
 };
 
 const createUser = (request, response) => {
+    console.log(request)
     let status = {};
     const {
         firstName,
@@ -24,7 +25,7 @@ const createUser = (request, response) => {
         address,
         token,
     } = request.body;
-    console.log(request)
+
 
     if (firstName && lastName && email && isValidEmail(email) && password
         && gender && jobRole && department && address && token) {
