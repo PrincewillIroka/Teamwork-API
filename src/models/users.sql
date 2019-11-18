@@ -1,0 +1,12 @@
+CREATE TABLE IF NOT EXISTS users (
+  "userId" SERIAL PRIMARY KEY,
+  "firstName" VARCHAR(255) NOT NULL,
+  "lastName" VARCHAR(255) NOT NULL,
+  "email" VARCHAR(255) NOT NULL,
+  "password" VARCHAR(255) NOT NULL,
+  "gender" VARCHAR(255) NOT NULL,
+  "jobRole" VARCHAR(255) NOT NULL,
+  "department" VARCHAR(255) NOT NULL,
+  "address" VARCHAR(255) NOT NULL,
+  "accessLevel" VARCHAR(255) NOT NULL
+);
