@@ -19,7 +19,6 @@ describe('Teamwork', () => {
                 .send(userCredentials)
                 .end((error, response) => {
                     const { data } = response.body;
-                    console.log(data)
                     token = data.token;
                     done();
                 });
