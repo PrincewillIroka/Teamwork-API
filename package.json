@@ -33,6 +33,7 @@
     "eslint-plugin-import": "^2.18.2",
     "express": "^4.17.1",
     "express-fileupload": "^1.1.6-alpha.6",
+    "express-formidable": "^1.2.0",
     "express-validator": "^6.2.0",
     "helmet": "^3.21.2",
     "hpp": "^0.2.2",
