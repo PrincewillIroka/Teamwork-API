@@ -7,6 +7,7 @@ const fileupload = require('express-fileupload');
 
 const app = express();
 
+app.use(bodyParser.json())
 app.use(bodyParser.json({ type: 'text/*' }))
 app.use(bodyParser.urlencoded({ extended: false }));
 
