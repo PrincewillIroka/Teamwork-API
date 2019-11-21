@@ -142,7 +142,7 @@ const createUser = (request, response) => {
 };
 
 const signIn = (request, response) => {
-    console.log(request.body)
+    console.log(request)
     let status = {};
     const { email, password } = request.body;
 
