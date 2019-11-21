@@ -12,7 +12,6 @@ const isValidEmail = (email) => {
 };
 
 const createUser = (request, response) => {
-    console.log(request)
     let status = {};
     const {
         firstName,
@@ -143,7 +142,6 @@ const createUser = (request, response) => {
 };
 
 const signIn = (request, response) => {
-    console.log(request.body)
     let status = {};
     const { email, password } = request.body;
 
